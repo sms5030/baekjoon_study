@@ -3,91 +3,192 @@
 
 using namespace std;
 
-int N, M;
-int arr[51][51] = { 0 };
-vector<int> homeList;
-vector<int> chickenList;
-int minResult = 1000000000;
+void FindMinArea(int N, int cctvCount);
+void GetMinArea();
+void Up(int nm[10][10], int row, int col);
+void Down(int nm[10][10], int row, int col);
+void Left(int nm[10][10], int row, int col);
+void Right(int nm[10][10], int row, int col);
 
-void FindMinDistance(int L, int idx);
+int N, M;
+int m[10][10] = { 0 };
+vector<int> cctvType;
+vector<int> cctvIndex;
+vector<int> cctvDirection;
+int minArea = 0;
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    cout.tie(NULL);
-
-    cin >> N >> M;
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            cin >> arr[i][j];
-            if (arr[i][j] == 1) {
-                homeList.push_back(i * N + j);
-            }
-            if (arr[i][j] == 2) {
-                chickenList.push_back(i * N + j);
-            }
-        }
+  cin >> N >> M;
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
+      cin >> m[i][j];
+      if (1 <= m[i][j] && m[i][j] <= 5) {
+        cctvType.push_back(m[i][j]);
+        cctvIndex.push_back(i * M + j);
+        cctvDirection.push_back(1);
+      }
     }
+  }
 
-    int chickenLen = chickenList.size();
-    FindMinDistance(chickenLen - M, 0);
-    cout << minResult << endl;
-    return 0;
+  int cctvCount = cctvType.size();
+  minArea = N * M + 1;
+  FindMinArea(0, cctvCount);
+
+  cout << minArea << "\n";
 }
 
-void FindMinDistance(int L, int idx) {
-    cout << L << " " << idx << "\n";
+void FindMinArea(int N, int cctvCount) {
+  if (N == cctvCount) {
+    GetMinArea();
+    return;
+  }
 
-    if (L == 0) {
-        int result = 0;
-        int homeLen = homeList.size();
-        int chickenLen = chickenList.size();
-        for (int i = 0; i < homeLen; i++) {
-            int minDistance = 10000;
-            for (int j = 0; j < chickenLen; j++) {
-                if (chickenList[j] > 0) {
-                    int homeI = homeList[i] / N;
-                    int homeJ = homeList[i] % N;
-                    int chickenI = chickenList[j] / N;
-                    int chickenJ = chickenList[j] % N;
-                    int distance = (homeI > chickenI ? homeI - chickenI : chickenI - homeI) + (homeJ > chickenJ ? homeJ - chickenJ : chickenJ - homeJ);
-                    
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                    }
-                }
-            }
-            result += minDistance;
-        }
-
-        if (result < minResult) {
-            for (int i = 0; i < chickenLen; i++) {
-                cout << chickenList[i] << " ";
-            }
-            cout << "\n";
-            for (int i = 0; i < N; i++) {
-                for (int j = 0; j < N; j++) {
-                    cout << arr[i][j] << " " ;
-                }
-                cout << "\n";
-            }
-
-
-            minResult = result;
-            cout << minResult << endl;
-        }
-        return;
+  int type = cctvType[N];
+  if (type == 5) {
+    cctvDirection[N] = 0;
+    FindMinArea(N + 1, cctvCount);
+  } else if (type == 2) {
+    for (int i = 0; i < 2; i++) {
+      cctvDirection[N] = i;
+      FindMinArea(N + 1, cctvCount);
     }
-
-    int chickenLen = chickenList.size();
-    if (chickenLen < idx) {
-        return;
+  } else {
+    for (int i = 0; i < 4; i++) {
+      cctvDirection[N] = i;
+      FindMinArea(N + 1, cctvCount);
     }
+  }
+}
 
-    for (int i = idx; i < chickenLen; i++) {
-        int savedValue = chickenList[i];
-        chickenList[i] = -1;
-        FindMinDistance(L - 1, idx + 1);
-        chickenList[i] = savedValue;
+void GetMinArea() {
+  int cctvCount = cctvType.size();
+  int nm[10][10] = { 0 };
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
+      nm[i][j] = m[i][j];
     }
+  }
+  for (int i = 0; i < cctvCount; i++) {
+    int type = cctvType[i];
+    int index = cctvIndex[i];
+    int direction = cctvDirection[i];
+    if (type == 1) {
+      if (direction == 0) {
+        Right(nm, index / M, index % M);
+      } if (direction == 1) {
+        Up(nm, index / M, index % M);
+      } if (direction == 2) {
+        Left(nm, index / M, index % M);
+      } if (direction == 3) {
+        Down(nm, index / M, index % M);
+      }
+    } else if (type == 2) {
+      if (direction == 0) {
+        Right(nm, index / M, index % M);
+        Left(nm, index / M, index % M);
+      } if (direction == 1) {
+        Up(nm, index / M, index % M);
+        Down(nm, index / M, index % M);
+      }
+    }  else if (type == 3) {
+      if (direction == 0) {
+        Up(nm, index / M, index % M);
+        Right(nm, index / M, index % M);
+      } if (direction == 1) {
+        Up(nm, index / M, index % M);
+        Left(nm, index / M, index % M);
+      } if (direction == 2) {
+        Left(nm, index / M, index % M);
+        Down(nm, index / M, index % M);
+      } if (direction == 3) {
+        Down(nm, index / M, index % M);
+        Right(nm, index / M, index % M);
+      }
+    }  else if (type == 4) {
+      if (direction == 0) {
+        Up(nm, index / M, index % M);
+        Right(nm, index / M, index % M);
+        Left(nm, index / M, index % M);
+      } if (direction == 1) {
+        Up(nm, index / M, index % M);
+        Left(nm, index / M, index % M);
+        Down(nm, index / M, index % M);
+      } if (direction == 2) {
+        Left(nm, index / M, index % M);
+        Down(nm, index / M, index % M);
+        Right(nm, index / M, index % M);
+      } if (direction == 3) {
+        Down(nm, index / M, index % M);
+        Right(nm, index / M, index % M);
+        Up(nm, index / M, index % M);
+      }
+    }  else if (type == 5) {
+      Right(nm, index / M, index % M);
+      Left(nm, index / M, index % M);
+      Up(nm, index / M, index % M);
+      Down(nm, index / M, index % M);
+    }
+    
+  }
+
+  int result = 0;
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
+      if (nm[i][j] == 0) {
+        result++;
+      }
+    }
+  }
+
+  if (result < minArea) {
+    minArea = result;
+  }
+}
+
+void Up(int nm[10][10], int row, int col) {
+  for (int i = row - 1; i >= 0; i--) {
+    if (nm[i][col] == 6) {
+      break;
+    } else if (1 <= nm[i][col] && nm[i][col] <= 5) {
+      continue;
+    } else {
+      nm[i][col] = 9;
+    }
+  }
+}
+
+void Down(int nm[10][10], int row, int col) {
+  for (int i = row + 1; i < N; i++) {
+    if (nm[i][col] == 6) {
+      break;
+    } else if (1 <= nm[i][col] && nm[i][col] <= 5) {
+      continue;
+    } else {
+      nm[i][col] = 9;
+    }
+  }
+}
+
+void Left(int nm[10][10], int row, int col) {
+  for (int i = col - 1; i >= 0; i--) {
+    if (nm[row][i] == 6) {
+      break;
+    } else if (1 <= nm[row][i] && nm[row][i] <= 5) {
+      continue;
+    } else {
+      nm[row][i] = 9;
+    }
+  }
+}
+
+void Right(int nm[10][10], int row, int col) {
+  for (int i = col + 1; i < M; i++) {
+    if (nm[row][i] == 6) {
+      break;
+    } else if (1 <= nm[row][i] && nm[row][i] <= 5) {
+      continue;
+    } else {
+      nm[row][i] = 9;
+    }
+  }
 }
