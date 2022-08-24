@@ -5,6 +5,13 @@
     "iostream": "cpp",
     "queue": "cpp",
     "utility": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "__locale": "cpp",
+    "__tuple": "cpp",
+    "algorithm": "cpp",
+    "atomic": "cpp",
+    "locale": "cpp",
+    "memory": "cpp",
+    "string": "cpp"
   }
 }
